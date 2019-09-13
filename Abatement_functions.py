@@ -78,7 +78,7 @@ def plot_smooth(A,tau,sigma,sigma_i,sigma_base,label):
     A_base = A[:,sigma_base]
     sigma_val = find_nearest(sigma,sigma_i)
     sigma_index = np.where(sigma == sigma_val)
-    fig = plt.figure(frameon=False, figsize=(8,5), dpi=100)
+    fig = plt.figure(frameon=False, figsize=(6,4), dpi=100)
     ax = fig.add_subplot(1,1,1)
     ax.plot(tau,A_base)
     ax.plot(tau,A[:,sigma_index[0]])
