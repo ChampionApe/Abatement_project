@@ -2,8 +2,8 @@
 Development of integration methodology of bottom-up abatement function in CGE models. 
 
 The project covers to types of abatement technologies:
-* The 
-* Another
+* End-of-pipe abatement (binder version executable),
+* Input-displacing abatement technology (requires gams and its Python API installed). 
 
 ### To access binder version, click link below:
 
