@@ -1,5 +1,6 @@
 import os
 import shutil
+import pickle
 import pandas as pd
 from gams import *
 from dreamtools.gams_pandas import *
@@ -15,17 +16,17 @@ def database_type(database):
 	elif isinstance(database,DataBase.py_db):
 		return database
 
+def end_w_y(x,y):
+	if x.endswith(y):
+		return x
+	else:
+		return x+y
 def end_w_gdx(x):
-	if x.endswith('.gdx'):
-		return x
-	else:
-		return x+'.gdx'
-
+	return end_w_y(x,'.gdx')
 def end_w_gms(x):
-	if x.endswith('.gms'):
-		return x
-	else:
-		return x+'.gms'
+	return end_w_y(x,'.gms')
+def end_w_pkl(x):
+	return end_w_y(x,'.pkl')
 
 class gams_model:
 	"""
@@ -33,9 +34,8 @@ class gams_model:
 	work_folder: Point to folder where the model should be run from. 
 	opt_file: Add options file. If None, a default options file is written (see default_opt).
 	"""
-	def __init__(self,databases,work_folder,opt_file=None,execute_name='CollectAndRun.gms'):
+	def __init__(self,work_folder,opt_file=None,execute_name='CollectAndRun.gms'):
 		self.work_folder = work_folder
-		self.databases = databases
 		self.execute_name = execute_name
 		self.dbs = {}
 		self.ws = GamsWorkspace(working_directory = self.work_folder)
@@ -43,27 +43,23 @@ class gams_model:
 			self.opt = default_opt(self.ws,name='temp.opt')
 		else:
 			self.opt = self.ws.add_options(opt_file=opt_file)
-		self.upd_databases()
 
 	def upd_databases(self):
 		"""
 		Read in databases, export to work_folder, and add to GamsWorkspace.
 		"""
-		for database in self.databases:
-			self.databases[database] = database_type(self.databases[database])
-			self.databases[database].default_db = 'db_pd'
-			self.databases[database].merge_internal()
-			self.databases[database].default_db = 'db_Gdx'
-			self.databases[database].db.export(self.work_folder+'\\'+end_w_gdx(database))
+		for database in self.model.databases:
+			self.model.databases[database].db_Gdx.export(self.work_folder+'\\'+end_w_gdx(database))
 			self.dbs[database] = self.ws.add_database_from_gdx(self.work_folder+'\\'+end_w_gdx(database))
 
-	def run(self,model,options):
+	def run(self,model,options_add={},options_run={}):
 		"""
 		Create Model instance and run.
 		"""
 		self.model_instance(model)
-		self.add_job()
-		self.run_job(options)
+		self.compile_collect_file()
+		self.add_job(options_add)
+		self.run_job(options_run)
 		self.out_db = DataBase.py_db(database_gdx=self.job.out_db,default_db='db_Gdx')
 
 	def model_instance(self,gams_settings):
@@ -73,13 +69,14 @@ class gams_model:
 		(2) Writes 'placeholders' used in the gams code to the opt.file; places where %PLACEHOLDER% is used. 
 		(3) If a run_file is included (part where statement of fixing and solve statement is included), the
 			attribute self.model.run_file = NAMEOFFILE. If a run_file is not included, a default run_file
-			is created from a number of settings in *gams_settings* as well. See write_fun_file() for more.
+			is created from a number of settings in *gams_settings* as well. See write_run_file() for more.
 		(4) If a collect_file is included (part where $IMPORT of components are called), the attribute 
 			self.model.collect_file = NAMEOFFILE. If a collect_file is not included, a default file is created.
 			See write_collect_file() for more.
 		(5) The relevant files for running the model are copied to the work_folder, ready to execute.
 		"""
 		self.model = gams_settings
+		self.upd_databases()
 		self.update_placeholders()
 		if self.model.run_file is None:
 			self.write_run_file()
@@ -89,21 +86,25 @@ class gams_model:
 			if not os.path.isfile(self.work_folder+'\\'+end_w_gms(file)):
 				shutil.copy(self.model.files[file]+'\\'+end_w_gms(file),self.work_folder+'\\'+end_w_gms(file))
 
-	def add_job(self):
+	def compile_collect_file(self):
+		with open(self.work_folder+'\\'+end_w_gms(self.model.collect_file).replace('.gms','.gmy'), "w") as file:
+			file.write(Precompiler(self.work_folder+'\\'+end_w_gms(self.model.collect_file))())
+		return self.work_folder+'\\'+end_w_gms(self.model.collect_file).replace('.gms','.gmy')
+
+	def add_job(self,options={}):
 		"""
 		Given a model_instance is created, this creates a GamsJob by compiling the self.model.collect_file
 		using Precompiler from the dreamtools package. The GamsJob is added as an attribute self.job.
 		"""
-		with open(self.work_folder+'\\'+end_w_gms(self.model.collect_file).replace('.gms','.gmy'), "w") as file:
-			file.write(Precompiler(self.work_folder+'\\'+end_w_gms(self.model.collect_file))())
-		self.job = self.ws.add_job_from_file(self.work_folder+'\\'+end_w_gms(self.model.collect_file).replace('.gms','.gmy'))
+		self.compile_collect_file()
+		self.job = self.ws.add_job_from_file(self.work_folder+'\\'+end_w_gms(self.model.collect_file).replace('.gms','.gmy'),**options)
 		return self.job
 
-	def run_job(self,options):
+	def run_job(self,options={}):
 		""" 
-		Add options beyond opt-file and databases: NB NOT IMPLEMENTED YET.
+		Add options using dict with key = option_name, value = option.
 		"""
-		self.job.run(self.opt,databases=list(self.dbs.values()))
+		self.job.run(self.opt,databases=list(self.dbs.values()),**options)
 
 	def update_placeholders(self):
 		"""
@@ -154,22 +155,106 @@ class gams_model:
 		with open(self.work_folder+'\\'+self.execute_name, "w") as file:
 			file.write(self.model.write_collect_and_run_file(self.execute_name))
 
+class merge_gams_settings:
+	"""
+	Collection of methods for merging gams_settings (classes) into one, to run combined models.
+	"""
+
+def merge_gams_settings(ls,merge_dbs_adhoc=True,name=None,run_file=None,solve=None):
+	return gams_settings(name = merge_names(ls,name=name),
+						 databases = merge_databases(ls,merge_dbs_adhoc=merge_dbs_adhoc),
+						 placeholders = merge_placeholders(ls),
+						 run_file = merge_run_files(ls,run_file),
+						 blocks = merge_blocks(ls),
+						 g_endo = merge_g_endo(ls),
+						 g_exo  = merge_g_exo(ls),
+						 solve  = merge_run_files(ls,solve),
+						 files  = merge_files(ls),
+						 collect_files = merge_collect_files(ls))
+
+def merge_names(ls,name):
+	return '_'.join([s.name for s in ls] if name is None else name)
+def merge_databases(ls,merge_dbs_adhoc):
+	"""
+	Note that if merge_dbs_adhoc is True the databases that share the same name are merged. 
+	However, if symbols overlap in the various databases, these are merged as well. Thus 
+	the underlying data may be altered as well.
+	"""
+	if merge_dbs_adhoc is True:
+		databases = {}
+		for database_name in set([x for s in ls for x in s.databases]):
+			db_temp = DataBase.py(default_db='db_Gdx')
+			for database in [s.databases[x] for s in ls for x in s.databases if x==database_name]:
+				DataBase.py_db.merge_dbs(db_temp,database)
+			databases[database_name] = db_temp
+	else:
+		if len(set([x for s in ls for x in s.databases]))==len([x for s in ls for x in s.databases]):
+			databases = {key: value for s in ls for key,value in s.databases.items()}
+		else:
+			raise ValueError(f"Databases overlap in names. Consider setting merge_dbs_adhoc=True, or in another way merge databases")
+	return databases
+def merge_placeholders(ls):
+	return {key: value for s in ls for key,value in s.placeholders.items()}
+def merge_run_files(ls,run_file):
+	return None if name is None else run_file
+def merge_blocks(ls):
+	return [x for y in ls for x in y.blocks]
+def merge_g_endo(ls):
+	return [x for y in ls for x in y.g_endo]
+def merge_g_exo(ls):
+	return [x for y in ls for x in y.g_exo]
+def merge_files(ls):
+	return {key: value for s in ls for key,value in s.files.items()}
+def merge_collect_files(ls):
+	return [x for y in ls for x in y.collect_files]
+
 class gams_settings:
 	"""
 	settings for gams model. The specific use can be read from the application in the gams_model class above.
 	"""
-	def __init__(self,name,placeholders=None,run_file=None,blocks=None,g_endo=[],g_exo=[],solve=None,files={},collect_file=None,collect_files=None,root_file=None):
-		self.name = name # Name of model instance
-		self.placeholders = placeholders
-		self.run_file = run_file
-		self.blocks = blocks
-		self.g_endo = g_endo
-		self.g_exo = g_exo
-		self.solve = solve
-		self.files = files
-		self.collect_file = collect_file
-		self.collect_files = collect_files
-		self.root_file = root_file
+	def __init__(self,name="somename",pickle_path=None,placeholders=None,databases=None,run_file=None,blocks=None,g_endo=[],g_exo=[],solve=None,files={},collect_file=None,collect_files=None,root_file=None,db_export=None):
+		if pickle_path is None:
+			self.name = name # Name of model instance
+			self.placeholders = placeholders
+			self.databases = databases
+			self.run_file = run_file
+			self.blocks = blocks
+			self.g_endo = g_endo
+			self.g_exo = g_exo
+			self.solve = solve
+			self.files = files
+			self.collect_file = collect_file
+			self.collect_files = collect_files
+			self.root_file = root_file
+			self.db_export = db_export
+		else:
+			self.import_from_pickle(os.path.split(pickle_path)[0],os.path.split(pickle_path)[1])
+
+	def import_from_pickle(self,repo,pickle_name):
+		with open(repo+'\\'+end_w_pkl(pickle_name), "rb") as file:
+			self.__dict__.update(pickle.load(file).__dict__)
+		for db in self.db_export:
+			self.databases = {db: DataBase.py_db(file_path=self.db_export[db]) for db in self.db_export}
+		return self
+
+	def export(self,repo,pickle_name,inplace_db = False):
+		self.db_export = {db: self.export_db(repo,db) for db in self.databases}
+		if inplace_db:
+			temp = None
+		else:
+			temp = self.databases
+		self.databases = None
+		with open(repo+'\\'+end_w_pkl(pickle_name), "wb") as file:
+			pickle.dump(self,file)
+		self.databases = temp
+
+	def export_db(self,repo,db):
+		self.databases[db] = database_type(self.databases[db])
+		self.databases[db].default_db = 'db_pd'
+		self.databases[db].merge_internal()
+		self.databases[db].default_db = 'db_Gdx'
+		self.databases[db].db.export(repo+'\\'+end_w_gdx(db))
+		return repo+'\\'+end_w_gdx(db)
 
 	def write_collect_files(self,name):
 		"""
@@ -217,7 +302,7 @@ class gams_model_py:
 	def __init__(self,database,gsettings=None,blocks_text=None,functions=None,groups={},exceptions=[],exceptions_load=[],components = {},export_files = None):
 		self.database = database
 		if gsettings is None:
-			self.model = gams_settings(self.database.name,placeholders=self.default_placeholders())
+			self.model = gams_settings(name=self.database.name,placeholders=self.default_placeholders(),databases={self.database.name: self.database},files={})
 		self.groups = groups
 		self.exceptions=exceptions
 		self.exceptions_load = exceptions_load
@@ -229,11 +314,11 @@ class gams_model_py:
 	def default_placeholders(self):
 		return {self.database.name: self.database.name}
 
-	def run_default(self,repo):
+	def run_default(self,repo,export_settings=False):
 		if not os.path.exists(repo):
 			os.makedirs(repo)
 		self.write_default_components()
-		self.default_export(repo)
+		self.default_export(repo,export_settings=export_settings)
 
 	def write_default_components(self):
 		self.functions = gams_model_py.merge_functions(regex_gms.functions_from_str(default_user_functions()),self.functions)
@@ -261,9 +346,11 @@ class gams_model_py:
 		else:
 			return {**functions1,**{key: functions2[key] for key in set(functions2.keys())-set(functions1.keys())}}
 
-	def default_export(self,repo):
+	def default_export(self,repo,export_settings=False):
 		self.export_components(self.default_files_components(repo))
 		self.add_default_collect(self.model.name+'_CollectFile.gms',repo)
+		if export_settings:
+			self.model.export(repo,self.model.name)
 
 	def add_default_collect(self,name,repo):
 		with open(repo+'\\'+end_w_gms(name),"w") as file:
@@ -439,7 +526,6 @@ def default_Root():
 	return """# Root File for model
 OPTION SYSOUT=OFF, SOLPRINT=OFF, LIMROW=0, LIMCOL=0, DECIMALS=6;
 $SETLOCAL qmark ";
-
 """
 
 def default_user_functions():
@@ -458,7 +544,6 @@ $FUNCTION load_level({group}, {gdx}):
   $ENDLOOP
   $onlisting
 $ENDFUNCTION
-
 $FUNCTION load_fixed({group}, {gdx}):
   $offlisting
   $GROUP __load_group {group};
@@ -472,7 +557,6 @@ $FUNCTION load_fixed({group}, {gdx}):
   $ENDLOOP
   $onlisting
 $ENDFUNCTION
-
 """
 
 def default_opt(ws,name="options.opt"):

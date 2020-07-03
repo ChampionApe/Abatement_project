@@ -232,7 +232,8 @@ class py_db:
 		"""
 		If alias_domains is None, return None, else:
 			x				= name of symbol,
-			alias_domains	= list of integers, that returns a list of domain names (see method 'self.alias_domain').
+			alias_domains	= 	list of integers, that returns a list of domain names (see method 'self.alias_domain'),
+								or dict with names to replace with IF they appear in the domains.
 		"""
 		if alias_domains is None:
 			return None
@@ -371,28 +372,34 @@ class py_db:
 	###									 2.1: ALIAS METHODS' 										###
 	###################################################################################################
 
+	def alias_list(self,x):
+		if x in self['alias_set']:
+			key_= x
+			return [key_]+self['alias_'].get_level_values(1)[self['alias_'].get_level_values(0)==key_].to_list()
+		elif x in self['alias_map2']:
+			key_ = self['alias_'].get_level_values(0)[self['alias_'].get_level_values(1)==x][0]
+			return [key_]+self['alias_'].get_level_values(1)[self['alias_'].get_level_values(0)==key_].to_list()
+		elif x in self.sets_flat:
+			return [x]
+		else: 
+			return TypeError(f"{x} is not a set, and can thus not be aliased")
+
 	def alias(self,x,index_):
 		"""
 		Return list of symbols that are aliased with x, with index_ denoting the integer-index of the list that should be returned.
-		If the set is not aliased, it simply return the set itself.
+		If the set is not aliased, it simply returns the set itself. If the symbol is not a set, return TypeError.
 		"""
-		if x in self['alias_set']:
-			key_ = x
-			return ([key_]+self['alias_'].get_level_values(1)[self['alias_'].get_level_values(0)==key_].to_list())[index_]
-		elif x in self['alias_map2']:
-			key_ = self['alias_'].get_level_values(0)[self['alias_'].get_level_values(1)==x][0]
-			return ([key_]+self['alias_'].get_level_values(1)[self['alias_'].get_level_values(0)==key_].to_list())[index_]
-		elif x in self.sets_flat:
-			return x
-		else:
-			TypeError(f"{x} is not a set, and can thus not be aliased.")
+		return self.alias_list(x)[index_]
 
 	def alias_domain(self,x,map_):
 		"""
 		Return list of symbols in domains with indices map_.
 		E.g.: Let x be a variable defined over sets [setname1,setname2]. Both sets have aliases. 
 		"""
-		return [self.alias(py_db.index(self,x).names[i],map_[i]) for i in range(len(py_db.index(self,x).names))]
+		if isinstance(map_,(list,tuple,int,pd.Index)):
+			return [self.alias(py_db.index(self,x).names[i],map_[i]) for i in range(len(py_db.index(self,x).names))]
+		elif isinstance(map_,dict):
+			return [x if x not in map_ else map_[x] for x in py_db.index(self,x).names]
 
 	###################################################################################################
 	###									3: CREATE/MERGE SYMBOLS/DB	 								###
@@ -430,10 +437,8 @@ class py_db:
 		if isinstance(db1,GamsPandasDatabase):
 			[py_db.add_or_merge(db1,db2[name],name,priority) for name in db2.sets['sets']]; # Fundamental sets
 			if 'alias_' in db2:
-				[py_db.add_or_merge(db1,py_db.create_alias(db2,name,alias),alias,priority) for name in db2.alias_all for alias in db2.alias_all[name] if name in db2.sets['sets']]; # alias'
+				[py_db.add_or_merge(db1,py_db.create_alias(db2,name,alias),alias,priority) for name in db2.alias_all for alias in db2.alias_all[name]]; # alias'
 			[py_db.add_or_merge(db1,db2[name],name,priority) for name in db2 if name not in db2.sets['sets']]; # other symbols
-			if 'alias_' in db2:
-				[py_db.add_or_merge(db1,py_db.create_alias(db2,name,alias),alias,priority) for name in db2.alias_all for alias in db2.alias_all[name] if name not in db2.sets['sets']]; # other alias'
 		else:
 			[py_db.add_or_merge(db1,db2[name],name,priority) for name in db2];
 			if 'alias_' in db2:
