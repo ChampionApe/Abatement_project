@@ -33,12 +33,12 @@ class abatement_model_with_CET(gams_model_py):
 			self.blocks += self.block_components[component]
 
 	# Define groups: 
-	def define_groups(self,p='p',q='q',mu='mu',sigma='sigma',eta_='eta_'):
+	def define_groups(self,p='p',q='q',mu='mu',sigma='sigma',eta='eta'):
 		self.p = p
 		self.q = q
 		self.mu = mu
 		self.sigma = sigma
-		self.eta_ = eta_
+		self.eta = eta
 		if p not in self.database:
 			self.database[p] = pd.Series(1,index=self.database[self.tree.setname],name=p)
 		if q not in self.database:
@@ -47,10 +47,10 @@ class abatement_model_with_CET(gams_model_py):
 			self.database[mu] = pd.Series(0.5,index=self.database[self.tree.all_map],name=mu)
 		if sigma not in self.database:
 			self.database[sigma] = pd.Series(0.5, index = self.database[self.tree.in_agg],name=sigma)
-		if eta_ not in self.database:
-			self.database[eta_] = pd.Series(-0.5, index = self.database[self.tree.out_agg], name=eta_)
+		if eta not in self.database:
+			self.database[eta] = pd.Series(-0.5, index = self.database[self.tree.out_agg], name=eta)
 		self.group_tech = {sigma: {'conditions': self.database.get(self.tree.in_agg).to_str},
-						   eta_ : {'conditions': self.database.get(self.tree.out_agg).to_str},
+						   eta : {'conditions': self.database.get(self.tree.out_agg).to_str},
 					       mu	: {'conditions': self.database.get(self.tree.all_map).to_str}}
 		self.group_exo = {p: {'conditions': self.database.get(self.tree.inpname).to_str},
 						  q: {'conditions': self.database.get(self.tree.outname).to_str}}
@@ -76,9 +76,9 @@ class abatement_model_with_CET(gams_model_py):
 							'sigma':{'base'  : self.database.get(self.sigma).to_str,
 									 'alias' : self.database.get(self.sigma,alias_domains=n2nn).to_str,
 									 'alias2': self.database.get(self.sigma,alias_domains=n2nnn).to_str},
-							'eta' : {'base'  : self.database.get(self.eta_).to_str,
-									 'alias' : self.database.get(self.eta_,alias_domains=n2nn).to_str,
-									 'alias2': self.database.get(self.eta_,alias_domains=n2nnn).to_str},
+							'eta' : {'base'  : self.database.get(self.eta).to_str,
+									 'alias' : self.database.get(self.eta,alias_domains=n2nn).to_str,
+									 'alias2': self.database.get(self.eta,alias_domains=n2nnn).to_str},
 							'inputs': { 'base'  : self.tree.setname,
 										'alias' : self.tree.alias,
 										'alias2': self.tree.alias2},
@@ -228,16 +228,16 @@ class nesting_tree_with_CET:
 		self.setname = 'n'
 		self.alias = 'nn'
 		self.alias2 = 'nnn'
-		self.in_map = 'in_map'
-		self.out_map = 'out_map'
-		self.all_map = 'all_map'
-		self.in_endo = 'in_endo'
-		self.out_endo = 'out_endo'
-		self.in_agg = 'in_agg'
-		self.out_agg = 'out_agg'
-		self.all_agg = 'all_agg'
-		self.inpname = 'input'
-		self.outname = 'output'
+		self.in_map = 'i_map_'+self.name
+		self.out_map = 'o_map_'+self.name
+		self.all_map = 'a_map_'+self.name
+		self.in_endo = 'i_endo_'+self.name
+		self.out_endo = 'o_endo_'+self.name
+		self.in_agg  =  'i_agg_'+self.name
+		self.out_agg = 'o_agg_'+self.name
+		self.all_agg = 'a_agg_'+self.name
+		self.inpname = 'input_'+self.name
+		self.outname = 'output_'+self.name
 		self.update(kwargs)
 		self.database = DataBase.py_db(name=self.name,alias=pd.MultiIndex.from_tuples([(self.setname,self.alias), (self.setname, self.alias2)]))
 
@@ -333,7 +333,6 @@ class nesting_tree_with_CET:
 		self.database[self.alias2]= self.database[self.setname].copy()
 		self.database[self.alias2].name = self.alias2
 
-
 class nesting_tree:
 	"""
 	Small class of nesting tree.
@@ -344,11 +343,11 @@ class nesting_tree:
 		self.setname = 'n'
 		self.alias = 'nn'
 		self.alias2 = 'nnn'
-		self.mapname = 'n2nn'
-		self.aggname = 'a'
-		self.inpname = 'input'
-		self.outname= 'output'
-		self.sector = 'sector'
+		self.mapname = 'map_'+self.name
+		self.aggname = 'a_'+self.name
+		self.inpname = 'input_'+self.name
+		self.outname= 'output_'+self.name
+		self.sector = 'sector_'+self.name
 		self.update(kwargs)
 		self.database = DataBase.py_db(name=self.name,alias=pd.MultiIndex.from_tuples([(self.setname,self.alias), (self.setname, self.alias2)]))
 

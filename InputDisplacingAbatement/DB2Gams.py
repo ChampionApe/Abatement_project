@@ -155,58 +155,69 @@ class gams_model:
 		with open(self.work_folder+'\\'+self.execute_name, "w") as file:
 			file.write(self.model.write_collect_and_run_file(self.execute_name))
 
-class merge_gams_settings:
+class mgs:
 	"""
 	Collection of methods for merging gams_settings (classes) into one, to run combined models.
 	"""
+	@staticmethod
+	def merge(ls,merge_dbs_adhoc=True,name=None,run_file=None,solve=None):
+		return gams_settings(name = mgs.merge_names(ls,name=name),
+						 	databases = mgs.merge_databases(ls,merge_dbs_adhoc=merge_dbs_adhoc),
+						 	placeholders = mgs.merge_placeholders(ls),
+						 	run_file = mgs.merge_run_files(ls,run_file),
+						 	blocks = mgs.merge_blocks(ls),
+						 	g_endo = mgs.merge_g_endo(ls),
+						 	g_exo  = mgs.merge_g_exo(ls),
+						 	solve  = mgs.merge_run_files(ls,solve),
+						 	files  = mgs.merge_files(ls),
+						 	collect_files = mgs.merge_collect_files(ls))
 
-def merge_gams_settings(ls,merge_dbs_adhoc=True,name=None,run_file=None,solve=None):
-	return gams_settings(name = merge_names(ls,name=name),
-						 databases = merge_databases(ls,merge_dbs_adhoc=merge_dbs_adhoc),
-						 placeholders = merge_placeholders(ls),
-						 run_file = merge_run_files(ls,run_file),
-						 blocks = merge_blocks(ls),
-						 g_endo = merge_g_endo(ls),
-						 g_exo  = merge_g_exo(ls),
-						 solve  = merge_run_files(ls,solve),
-						 files  = merge_files(ls),
-						 collect_files = merge_collect_files(ls))
+	@staticmethod
+	def merge_names(ls,name):
+		return '_'.join([s.name for s in ls] if name is None else name)
 
-def merge_names(ls,name):
-	return '_'.join([s.name for s in ls] if name is None else name)
-def merge_databases(ls,merge_dbs_adhoc):
-	"""
-	Note that if merge_dbs_adhoc is True the databases that share the same name are merged. 
-	However, if symbols overlap in the various databases, these are merged as well. Thus 
-	the underlying data may be altered as well.
-	"""
-	if merge_dbs_adhoc is True:
-		databases = {}
-		for database_name in set([x for s in ls for x in s.databases]):
-			db_temp = DataBase.py(default_db='db_Gdx')
-			for database in [s.databases[x] for s in ls for x in s.databases if x==database_name]:
-				DataBase.py_db.merge_dbs(db_temp,database)
-			databases[database_name] = db_temp
-	else:
-		if len(set([x for s in ls for x in s.databases]))==len([x for s in ls for x in s.databases]):
-			databases = {key: value for s in ls for key,value in s.databases.items()}
+	@staticmethod
+	def merge_databases(ls,merge_dbs_adhoc):
+		"""
+		Note that if merge_dbs_adhoc is True the databases that share the same name are merged. 
+		However, if symbols overlap in the various databases, these are merged as well. Thus 
+		the underlying data may be altered as well. 
+		"""
+		if merge_dbs_adhoc is True:
+			databases = {}
+			for database_name in set([x for s in ls for x in s.databases]):
+				db_temp = DataBase.py_db(default_db='db_Gdx')
+				for database in [s.databases[x] for s in ls for x in s.databases if x==database_name]:
+					DataBase.py_db.merge_dbs(db_temp.db_Gdx,database)
+				databases[database_name] = db_temp
 		else:
-			raise ValueError(f"Databases overlap in names. Consider setting merge_dbs_adhoc=True, or in another way merge databases")
-	return databases
-def merge_placeholders(ls):
-	return {key: value for s in ls for key,value in s.placeholders.items()}
-def merge_run_files(ls,run_file):
-	return None if name is None else run_file
-def merge_blocks(ls):
-	return [x for y in ls for x in y.blocks]
-def merge_g_endo(ls):
-	return [x for y in ls for x in y.g_endo]
-def merge_g_exo(ls):
-	return [x for y in ls for x in y.g_exo]
-def merge_files(ls):
-	return {key: value for s in ls for key,value in s.files.items()}
-def merge_collect_files(ls):
-	return [x for y in ls for x in y.collect_files]
+			if len(set([x for s in ls for x in s.databases]))==len([x for s in ls for x in s.databases]):
+				databases = {key: value for s in ls for key,value in s.databases.items()}
+			else:
+				raise ValueError(f"Databases overlap in names. Consider setting merge_dbs_adhoc=True, or in another way merge databases")
+		return databases
+
+	@staticmethod
+	def merge_placeholders(ls):
+		return {key: value for s in ls for key,value in s.placeholders.items()}
+	@staticmethod
+	def merge_run_files(ls,run_file):
+		return None if run_file is None else run_file
+	@staticmethod
+	def merge_blocks(ls):
+		return [x for y in ls for x in y.blocks]
+	@staticmethod
+	def merge_g_endo(ls):
+		return [x for y in ls for x in y.g_endo]
+	@staticmethod
+	def merge_g_exo(ls):
+		return [x for y in ls for x in y.g_exo]
+	@staticmethod
+	def merge_files(ls):
+		return {key: value for s in ls for key,value in s.files.items()}
+	@staticmethod
+	def merge_collect_files(ls):
+		return [x for y in ls for x in y.collect_files]
 
 class gams_settings:
 	"""
