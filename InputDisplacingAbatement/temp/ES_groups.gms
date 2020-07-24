@@ -14,5 +14,5 @@ $GROUP ES_endo
 ;
 
 @load_level(ES_endo,%qmark%%ES%");
-@load_fixed(ES_exo,%qmark%%ES%");
 @load_fixed(ES_tech,%qmark%%ES%");
+@load_fixed(ES_exo,%qmark%%ES%");

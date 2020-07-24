@@ -1,18 +1,44 @@
 ##### Collection Of Equations (COE): Collection of popular functions used in gams codes #####
 
 class CES:
-	"""
-	Collection of CES functions. Note that simply using a negative sigma value implies the CET format here.
-	"""
 	def equation(self,return_var,equi_name,domains,conditions,p,q,mu,sigma,inputs,in2aggs):
-		return f"""{equi_name}{domains}$({conditions})..	{CES.variable(return_var,p,q,mu,sigma,inputs,in2aggs)}"""
+		if return_var=='price_index':
+			return f"""{equi_name}_CD{domains}$({conditions} and {sigma['level']}=1)..	{CES.variable(return_var,p,q,mu,sigma,inputs,in2aggs,type_='CD')}
+	{equi_name}{domains}$({conditions} and {sigma['level']} <> 1)..	{CES.variable(return_var,p,q,mu,sigma,inputs,in2aggs)}"""
+		elif return_var=='demand':
+			return f"""{equi_name}{domains}$({conditions})..	{CES.variable(return_var,p,q,mu,sigma,inputs,in2aggs)}"""
 
 	@staticmethod
-	def variable(return_var,p,q,mu,sigma,inputs,in2aggs):
+	def variable(return_var,p,q,mu,sigma,inputs,in2aggs,type_=None):
 		if return_var=='price_index':
-			return CES.price(p['base'],p['alias'],mu['alias'],sigma['base'],in2aggs['alias'],inputs['alias'])
+			if type_=='CD':
+				return CES.price_CD(p['base'],p['alias'],mu['alias'],sigma['base'],in2aggs['alias'],inputs['alias'])
+			else:
+				return CES.price(p['base'],p['alias'],mu['alias'],sigma['base'],in2aggs['alias'],inputs['alias'])
 		elif return_var=='demand':
 			return CES.demand(q['base'],q['alias'],p['base'],p['alias'],mu['base'],sigma['alias'],in2aggs['base'],inputs['alias'])
+
+	@staticmethod
+	def price(p,p_alias,mu_alias,sigma,in2agg_alias,input_alias):
+		return """{p} =E= sum({nn}$({map_a}), {mu_a} * {p_a}**(1-{sigma}))**(1/(1-{sigma}));""".format(
+			p		= p,
+			p_a		= p_alias,
+			mu_a 	= mu_alias,
+			sigma   = sigma,
+			nn 		= input_alias,
+			map_a	= in2agg_alias
+			)
+
+	@staticmethod
+	def price_CD(p,p_alias,mu_alias,sigma,in2agg_alias,input_alias):
+		return """{p} =E= prod({nn}$({map_a}), {p_a}**({mu_a}));""".format(
+			p		= p,
+			p_a		= p_alias,
+			mu_a 	= mu_alias,
+			sigma   = sigma,
+			nn 		= input_alias,
+			map_a	= in2agg_alias
+			)
 
 	@staticmethod
 	def demand(q,q_alias,p,p_alias,mu,sigma_alias,in2agg,input_alias):
@@ -26,16 +52,42 @@ class CES:
 			map_ 	= in2agg,
 			nn		= input_alias)
 
-	@staticmethod
-	def price(p,p_alias,mu_alias,sigma,in2agg_alias,input_alias):
-		return """{p} =E= sum({nn}$({map_a}), {mu_a} * {p_a}**(1-{sigma}))**(1/(1-{sigma}));""".format(
-			p		= p,
-			p_a		= p_alias,
-			mu_a 	= mu_alias,
-			sigma   = sigma,
-			nn 		= input_alias,
-			map_a	= in2agg_alias
-			)
+# class CES:
+# 	"""
+# 	Collection of CES functions. Note that simply using a negative sigma value implies the CET format here.
+# 	"""
+# 	def equation(self,return_var,equi_name,domains,conditions,p,q,mu,sigma,inputs,in2aggs):
+# 		return f"""{equi_name}{domains}$({conditions})..	{CES.variable(return_var,p,q,mu,sigma,inputs,in2aggs)}"""
+
+# 	@staticmethod
+# 	def variable(return_var,p,q,mu,sigma,inputs,in2aggs):
+# 		if return_var=='price_index':
+# 			return CES.price(p['base'],p['alias'],mu['alias'],sigma['base'],in2aggs['alias'],inputs['alias'])
+# 		elif return_var=='demand':
+# 			return CES.demand(q['base'],q['alias'],p['base'],p['alias'],mu['base'],sigma['alias'],in2aggs['base'],inputs['alias'])
+
+# 	@staticmethod
+# 	def demand(q,q_alias,p,p_alias,mu,sigma_alias,in2agg,input_alias):
+# 		return """{q} =E= sum({nn}$({map_}), {mu}*({p}/{p_a})**(-{sigma_a})*{q_a});""".format(
+# 			q	  	= q,
+# 			q_a		= q_alias,
+# 			p 		= p,
+# 			p_a 	= p_alias,
+# 			mu 		= mu,
+# 			sigma_a = sigma_alias,
+# 			map_ 	= in2agg,
+# 			nn		= input_alias)
+
+# 	@staticmethod
+# 	def price(p,p_alias,mu_alias,sigma,in2agg_alias,input_alias):
+# 		return """{p} =E= sum({nn}$({map_a}), {mu_a} * {p_a}**(1-{sigma}))**(1/(1-{sigma}));""".format(
+# 			p		= p,
+# 			p_a		= p_alias,
+# 			mu_a 	= mu_alias,
+# 			sigma   = sigma,
+# 			nn 		= input_alias,
+# 			map_a	= in2agg_alias
+# 			)
 
 class normalized_CES:
 	"""

@@ -1,7 +1,8 @@
 
 $BLOCK M_T_in
 	E_T_in_q[n]$(i_endo_T[n])..	q[n] =E= sum(nn$(i_map_T[n,nn]), mu[n,nn]*(p[n]/p[nn])**(-sigma[nn])*q[nn]);
-	E_T_in_p[n]$(i_agg_T[n])..	p[n] =E= sum(nn$(i_map_T[nn,n]), mu[nn,n] * p[nn]**(1-sigma[n]))**(1/(1-sigma[n]));
+	E_T_in_p_CD[n]$(i_agg_T[n] and sigma.l[n]=1)..	p[n] =E= prod(nn$(i_map_T[nn,n]), p[nn]**(mu[nn,n]));
+	E_T_in_p[n]$(i_agg_T[n] and sigma.l[n] <> 1)..	p[n] =E= sum(nn$(i_map_T[nn,n]), mu[nn,n] * p[nn]**(1-sigma[n]))**(1/(1-sigma[n]));
 $ENDBLOCK
 
 

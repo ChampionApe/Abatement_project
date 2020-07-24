@@ -1,0 +1,527 @@
+GAMS 29.1.0  rbb4180b Released Nov 15, 2019 WEX-WEI x86 64bit/MS Windows                                                                                                                                                               07/23/20 15:39:30 Page 1
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+   3   
+   4   
+   5  # Root File for model
+   6  OPTION SYSOUT=OFF, SOLPRINT=OFF, LIMROW=0, LIMCOL=0, DECIMALS=6;
+   7  ;
+   8   
+   9  # ----------------------------------------------------------------------------------------------------
+  10  #  Import file: C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\FG_CollectFile.gms
+  11  # ----------------------------------------------------------------------------------------------------
+  12   
+  13   
+  14  # ----------------------------------------------------------------------------------------------------
+  15  #  Import file: C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\FG_functions.gms
+  16  # ----------------------------------------------------------------------------------------------------
+  17   
+  18   
+  19  # ----------------------------------------------------------------------------------------------------
+  20  #  Define function: load_level
+  21  # ----------------------------------------------------------------------------------------------------
+  22   
+  23   
+  24   
+  25  # ----------------------------------------------------------------------------------------------------
+  26  #  Define function: load_fixed
+  27  # ----------------------------------------------------------------------------------------------------
+  28   
+  29   
+  30  ;
+  31   
+  32  # ----------------------------------------------------------------------------------------------------
+  33  #  Import file: C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\FG_sets.gms
+  34  # ----------------------------------------------------------------------------------------------------
+  35   
+  36  sets
+  37          alias_set
+  38          alias_map2
+  39          n
+  40  ;
+  41   
+  42  alias(n,nn,nnn);
+  43   
+  44  sets
+  45          input_FG[n]
+  46          a_FG[n]
+  47          alias_[alias_set,alias_map2]
+  48          map_FG[n,nn]
+  49          sector_FG[n]
+  50          output_FG[n]
+  51  ;
+GDXIN   C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\_gams_py_gdb1.gdx
+--- LOAD  alias_set = 1:alias_set
+--- LOAD  alias_map2 = 2:alias_map2
+--- LOAD  n = 3:n
+GAMS 29.1.0  rbb4180b Released Nov 15, 2019 WEX-WEI x86 64bit/MS Windows                                                                                                                                                               07/23/20 15:39:30 Page 2
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+--- LOAD  sector_FG = 11:sector_FG
+--- LOAD  output_FG = 10:output_FG
+--- LOAD  input_FG = 9:input_FG
+--- LOAD  a_FG = 8:a_FG
+--- LOAD  alias_ = 6:alias_
+--- LOAD  map_FG = 7:map_FG
+  65  ;
+  66   
+  67  # ----------------------------------------------------------------------------------------------------
+  68  #  Import file: C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\FG_parameters.gms
+  69  # ----------------------------------------------------------------------------------------------------
+  70   
+  71  ;
+  72   
+  73  # ----------------------------------------------------------------------------------------------------
+  74  #  Import file: C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\FG_groups.gms
+  75  # ----------------------------------------------------------------------------------------------------
+  76   
+  77   
+  78  # -----------------------------------------------FG_tech----------------------------------------------
+  79  #  Initialize FG_tech group
+  80  # ----------------------------------------------------------------------------------------------------
+  87   
+  88   
+  89  # -----------------------------------------------FG_exo-----------------------------------------------
+  90  #  Initialize FG_exo group
+  91  # ----------------------------------------------------------------------------------------------------
+  98   
+  99   
+ 100  # -----------------------------------------------FG_endo----------------------------------------------
+ 101  #  Initialize FG_endo group
+ 102  # ----------------------------------------------------------------------------------------------------
+ 112   
+ 113  # ----------------------------------------------------------------------------------------------------
+ 114  #  Loop over __load_group
+ 115  # ----------------------------------------------------------------------------------------------------
+ 116   
+ 117      parameter load_p[n] "";
+ 118      load_p[n]$(((a_FG[n]))) = 0;
+ 119   
+ 120      parameter load_q[n] "";
+ 121      load_q[n]$(((sector_FG[n] and not output_FG[n]))) = 0;
+ 122   
+ 123    execute_load "_gams_py_gdb1"
+ 124  # ----------------------------------------------------------------------------------------------------
+ 125  #  Loop over __load_group
+ 126  # ----------------------------------------------------------------------------------------------------
+ 127   load_p=p.l  load_q=q.l ;
+ 128   
+ 129  # ----------------------------------------------------------------------------------------------------
+ 130  #  Loop over __load_group
+ 131  # ----------------------------------------------------------------------------------------------------
+ 132   
+GAMS 29.1.0  rbb4180b Released Nov 15, 2019 WEX-WEI x86 64bit/MS Windows                                                                                                                                                               07/23/20 15:39:30 Page 3
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+ 133      p.l[n]$(((a_FG[n]))) = load_p[n];
+ 134   
+ 135      q.l[n]$(((sector_FG[n] and not output_FG[n]))) = load_q[n];
+ 137  ;
+ 145   
+ 146  # ----------------------------------------------------------------------------------------------------
+ 147  #  Loop over __load_group
+ 148  # ----------------------------------------------------------------------------------------------------
+ 149   
+ 150      parameter load_sigma[n] "";
+ 151      load_sigma[n]$(((a_FG[n]))) = 0;
+ 152   
+ 153      parameter load_mu[n,nn] "";
+ 154      load_mu[n,nn]$(((map_FG[n,nn]))) = 0;
+ 155   
+ 156    execute_load "_gams_py_gdb1"
+ 157  # ----------------------------------------------------------------------------------------------------
+ 158  #  Loop over __load_group
+ 159  # ----------------------------------------------------------------------------------------------------
+ 160   load_sigma=sigma.l  load_mu=mu.l ;
+ 161   
+ 162  # ----------------------------------------------------------------------------------------------------
+ 163  #  Loop over __load_group
+ 164  # ----------------------------------------------------------------------------------------------------
+ 165   
+ 166      sigma.fx[n]$(((a_FG[n]))) = load_sigma[n];
+ 167   
+ 168      mu.fx[n,nn]$(((map_FG[n,nn]))) = load_mu[n,nn];
+ 170  ;
+ 178   
+ 179  # ----------------------------------------------------------------------------------------------------
+ 180  #  Loop over __load_group
+ 181  # ----------------------------------------------------------------------------------------------------
+ 182   
+ 183      parameter load_p[n] "";
+ 184      load_p[n]$(((input_FG[n]))) = 0;
+ 185   
+ 186      parameter load_q[n] "";
+ 187      load_q[n]$(((output_FG[n]))) = 0;
+ 188   
+ 189    execute_load "_gams_py_gdb1"
+ 190  # ----------------------------------------------------------------------------------------------------
+ 191  #  Loop over __load_group
+ 192  # ----------------------------------------------------------------------------------------------------
+ 193   load_p=p.l  load_q=q.l ;
+ 194   
+ 195  # ----------------------------------------------------------------------------------------------------
+ 196  #  Loop over __load_group
+ 197  # ----------------------------------------------------------------------------------------------------
+ 198   
+ 199      p.fx[n]$(((input_FG[n]))) = load_p[n];
+ 200   
+ 201      q.fx[n]$(((output_FG[n]))) = load_q[n];
+GAMS 29.1.0  rbb4180b Released Nov 15, 2019 WEX-WEI x86 64bit/MS Windows                                                                                                                                                               07/23/20 15:39:30 Page 4
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+ 203  ;
+ 204  ;
+ 205   
+ 206  # ----------------------------------------------------------------------------------------------------
+ 207  #  Import file: C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\FG_blocks.gms
+ 208  # ----------------------------------------------------------------------------------------------------
+ 209   
+ 210   
+ 211   
+ 212  # ------------------------------------------------M_FG------------------------------------------------
+ 213  #  Initialize M_FG equation block
+ 214  # ----------------------------------------------------------------------------------------------------
+ 215  EQUATION E_FG_q[n];
+ 216  E_FG_q[n]$((sector_fg[n] and not output_fg[n]))..       q[n]  =E=  sum(nn$(map_FG[n,nn]), mu[n,nn]*(p[n]/p[nn])**(-sigma[nn])*q[nn]);
+ 217  EQUATION E_FG_p[n];
+ 218  E_FG_p[n]$((a_fg[n]))..         p[n]  =E=  sum(nn$(map_FG[nn,n]), mu[nn,n] * p[nn]**(1-sigma[n]))**(1/(1-sigma[n]));
+ 219   
+ 220  # ----------------------------------------------------------------------------------------------------
+ 221  #  Define M_FG model
+ 222  # ----------------------------------------------------------------------------------------------------
+ 223  Model M_FG /
+ 224  E_FG_q, E_FG_p
+ 225  /;
+ 226   
+ 227   
+ 228  ;
+ 229  ;
+ 230   
+ 231  # ----------------------------------------------------------------------------------------------------
+ 232  #  Import file: C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\ES_CollectFile.gms
+ 233  # ----------------------------------------------------------------------------------------------------
+ 234   
+ 235   
+ 236  # ----------------------------------------------------------------------------------------------------
+ 237  #  Import file: C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\ES_functions.gms
+ 238  # ----------------------------------------------------------------------------------------------------
+ 239   
+ 240   
+ 241  # ----------------------------------------------------------------------------------------------------
+ 242  #  Define function: load_level
+ 243  # ----------------------------------------------------------------------------------------------------
+ 244   
+ 245   
+ 246   
+ 247  # ----------------------------------------------------------------------------------------------------
+ 248  #  Define function: load_fixed
+ 249  # ----------------------------------------------------------------------------------------------------
+ 250   
+ 251   
+ 252  ;
+ 253   
+ 254  # ----------------------------------------------------------------------------------------------------
+ 255  #  Import file: C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\ES_sets.gms
+GAMS 29.1.0  rbb4180b Released Nov 15, 2019 WEX-WEI x86 64bit/MS Windows                                                                                                                                                               07/23/20 15:39:30 Page 5
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+ 256  # ----------------------------------------------------------------------------------------------------
+ 257   
+ 258  sets
+ 259          alias_set
+ 260          alias_map2
+ 261          n
+ 262  ;
+ 263   
+ 264  alias(n,nn,nnn);
+ 265   
+ 266  sets
+ 267          input_ES[n]
+ 268          sector_ES[n]
+ 269          map_ES[n,nn]
+ 270          output_ES[n]
+ 271          alias_[alias_set,alias_map2]
+ 272          a_ES[n]
+ 273  ;
+GDXIN   C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\_gams_py_gdb0.gdx
+--- MERGE alias_set = 1:alias_set
+--- MERGE alias_map2 = 2:alias_map2
+--- MERGE n = 3:n
+--- LOAD  sector_ES = 11:sector_ES
+--- LOAD  output_ES = 10:output_ES
+--- LOAD  a_ES = 8:a_ES
+--- LOAD  input_ES = 9:input_ES
+--- MERGE alias_ = 6:alias_
+--- LOAD  map_ES = 7:map_ES
+ 287  ;
+ 288   
+ 289  # ----------------------------------------------------------------------------------------------------
+ 290  #  Import file: C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\ES_parameters.gms
+ 291  # ----------------------------------------------------------------------------------------------------
+ 292   
+ 293  ;
+ 294   
+ 295  # ----------------------------------------------------------------------------------------------------
+ 296  #  Import file: C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\ES_groups.gms
+ 297  # ----------------------------------------------------------------------------------------------------
+ 298   
+ 299   
+ 300  # -----------------------------------------------ES_tech----------------------------------------------
+ 301  #  Initialize ES_tech group
+ 302  # ----------------------------------------------------------------------------------------------------
+ 305   
+ 306   
+ 307  # -----------------------------------------------ES_exo-----------------------------------------------
+ 308  #  Initialize ES_exo group
+ 309  # ----------------------------------------------------------------------------------------------------
+ 312   
+ 313   
+ 314  # -----------------------------------------------ES_endo----------------------------------------------
+ 315  #  Initialize ES_endo group
+GAMS 29.1.0  rbb4180b Released Nov 15, 2019 WEX-WEI x86 64bit/MS Windows                                                                                                                                                               07/23/20 15:39:30 Page 6
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+ 316  # ----------------------------------------------------------------------------------------------------
+ 326   
+ 327  # ----------------------------------------------------------------------------------------------------
+ 328  #  Loop over __load_group
+ 329  # ----------------------------------------------------------------------------------------------------
+ 330   
+ 331      parameter load_p[n] "";
+ 332      load_p[n]$(((a_ES[n]))) = 0;
+ 333   
+ 334      parameter load_q[n] "";
+ 335      load_q[n]$(((sector_ES[n] and not output_ES[n]))) = 0;
+ 336   
+ 337    execute_load "_gams_py_gdb0"
+ 338  # ----------------------------------------------------------------------------------------------------
+ 339  #  Loop over __load_group
+ 340  # ----------------------------------------------------------------------------------------------------
+ 341   load_p=p.l  load_q=q.l ;
+ 342   
+ 343  # ----------------------------------------------------------------------------------------------------
+ 344  #  Loop over __load_group
+ 345  # ----------------------------------------------------------------------------------------------------
+ 346   
+ 347      p.l[n]$(((a_ES[n]))) = load_p[n];
+ 348   
+ 349      q.l[n]$(((sector_ES[n] and not output_ES[n]))) = load_q[n];
+ 351  ;
+ 359   
+ 360  # ----------------------------------------------------------------------------------------------------
+ 361  #  Loop over __load_group
+ 362  # ----------------------------------------------------------------------------------------------------
+ 363   
+ 364      parameter load_sigma[n] "";
+ 365      load_sigma[n]$(((a_ES[n]))) = 0;
+ 366   
+ 367      parameter load_mu[n,nn] "";
+ 368      load_mu[n,nn]$(((map_ES[n,nn]))) = 0;
+ 369   
+ 370    execute_load "_gams_py_gdb0"
+ 371  # ----------------------------------------------------------------------------------------------------
+ 372  #  Loop over __load_group
+ 373  # ----------------------------------------------------------------------------------------------------
+ 374   load_sigma=sigma.l  load_mu=mu.l ;
+ 375   
+ 376  # ----------------------------------------------------------------------------------------------------
+ 377  #  Loop over __load_group
+ 378  # ----------------------------------------------------------------------------------------------------
+ 379   
+ 380      sigma.fx[n]$(((a_ES[n]))) = load_sigma[n];
+ 381   
+ 382      mu.fx[n,nn]$(((map_ES[n,nn]))) = load_mu[n,nn];
+ 384  ;
+ 392   
+ 393  # ----------------------------------------------------------------------------------------------------
+GAMS 29.1.0  rbb4180b Released Nov 15, 2019 WEX-WEI x86 64bit/MS Windows                                                                                                                                                               07/23/20 15:39:30 Page 7
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+ 394  #  Loop over __load_group
+ 395  # ----------------------------------------------------------------------------------------------------
+ 396   
+ 397      parameter load_p[n] "";
+ 398      load_p[n]$(((input_ES[n]))) = 0;
+ 399   
+ 400      parameter load_q[n] "";
+ 401      load_q[n]$(((output_ES[n]))) = 0;
+ 402   
+ 403    execute_load "_gams_py_gdb0"
+ 404  # ----------------------------------------------------------------------------------------------------
+ 405  #  Loop over __load_group
+ 406  # ----------------------------------------------------------------------------------------------------
+ 407   load_p=p.l  load_q=q.l ;
+ 408   
+ 409  # ----------------------------------------------------------------------------------------------------
+ 410  #  Loop over __load_group
+ 411  # ----------------------------------------------------------------------------------------------------
+ 412   
+ 413      p.fx[n]$(((input_ES[n]))) = load_p[n];
+ 414   
+ 415      q.fx[n]$(((output_ES[n]))) = load_q[n];
+ 417  ;
+ 418  ;
+ 419   
+ 420  # ----------------------------------------------------------------------------------------------------
+ 421  #  Import file: C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\ES_blocks.gms
+ 422  # ----------------------------------------------------------------------------------------------------
+ 423   
+ 424   
+ 425   
+ 426  # ------------------------------------------------M_ES------------------------------------------------
+ 427  #  Initialize M_ES equation block
+ 428  # ----------------------------------------------------------------------------------------------------
+ 429  EQUATION E_ES_q[n];
+ 430  E_ES_q[n]$((sector_es[n] and not output_es[n]))..       q[n]  =E=  sum(nn$(map_ES[n,nn]), mu[n,nn]*(p[n]/p[nn])**(-sigma[nn])*q[nn]/sum(nnn$(map_ES[nnn,nn]), mu[nnn,nn]*(p[nnn]/p[nn])**(-sigma[nn])));
+ 431  EQUATION E_ES_p[n];
+ 432  E_ES_p[n]$((a_es[n]))..         p[n]  =E=  sum(nn$(map_ES[nn,n]), q[nn]*p[nn])/q[n];
+ 433   
+ 434  # ----------------------------------------------------------------------------------------------------
+ 435  #  Define M_ES model
+ 436  # ----------------------------------------------------------------------------------------------------
+ 437  Model M_ES /
+ 438  E_ES_q, E_ES_p
+ 439  /;
+ 440   
+ 441   
+ 442  ;
+ 443  ;
+ 444   
+ 445  # ----------------------------------------------------------------------------------------------------
+ 446  #  Import file: C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\RunFile.gms
+ 447  # ----------------------------------------------------------------------------------------------------
+GAMS 29.1.0  rbb4180b Released Nov 15, 2019 WEX-WEI x86 64bit/MS Windows                                                                                                                                                               07/23/20 15:39:30 Page 8
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+C o m p i l a t i o n
+
+
+ 448   
+ 449   
+ 450  # ----------------------------------------------------------------------------------------------------$FIX FG_tech, FG_exo, ES_tech, ES_exo;
+ 451  # ----------------------------------------------------------------------------------------------------
+ 458   
+ 459   
+ 460  # ----------------------------------------------------------------------------------------------------$UNFIX FG_endo, ES_endo;
+ 461  # ----------------------------------------------------------------------------------------------------
+ 468   
+ 469   
+ 470  # ----------------------------------------------------------------------------------------------------
+ 471  #  Define FG_ES model
+ 472  # ----------------------------------------------------------------------------------------------------
+ 473  Model FG_ES /
+ 474  E_FG_q, E_FG_p, E_ES_q, E_ES_p
+ 475  /;
+ 476   
+ 477   
+ 478  solve FG_ES using CNS;
+ 479  ;
+GAMS 29.1.0  rbb4180b Released Nov 15, 2019 WEX-WEI x86 64bit/MS Windows                                                                                                                                                               07/23/20 15:39:30 Page 9
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Include File Summary
+
+
+   SEQ   GLOBAL TYPE      PARENT   LOCAL  FILENAME
+
+     1        1 INPUT          0       0  C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\CollectAndRun.gmy
+     2       52 GDXIN          1      52  C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\_gams_py_gdb1.gdx
+     3      274 GDXIN          1     274  C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\_gams_py_gdb0.gdx
+
+
+COMPILATION TIME     =        0.000 SECONDS      3 MB  29.1.0 rbb4180b WEX-WEI
+GAMS 29.1.0  rbb4180b Released Nov 15, 2019 WEX-WEI x86 64bit/MS Windows                                                                                                                                                              07/23/20 15:39:30 Page 10
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Model Statistics    SOLVE FG_ES Using CNS From line 478
+
+
+MODEL STATISTICS
+
+BLOCKS OF EQUATIONS           4     SINGLE EQUATIONS           13
+BLOCKS OF VARIABLES           4     SINGLE VARIABLES           33
+NON ZERO ELEMENTS            96     NON LINEAR N-Z             83
+DERIVATIVE POOL              20     CONSTANT POOL              16
+CODE LENGTH                 243
+SINGLE =E|X= EQUS            13     SINGLE UNFIXED VARS        13
+
+
+GENERATION TIME      =        0.000 SECONDS      4 MB  29.1.0 rbb4180b WEX-WEI
+
+
+EXECUTION TIME       =        0.016 SECONDS      4 MB  29.1.0 rbb4180b WEX-WEI
+GAMS 29.1.0  rbb4180b Released Nov 15, 2019 WEX-WEI x86 64bit/MS Windows                                                                                                                                                              07/23/20 15:39:30 Page 11
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE FG_ES Using CNS From line 478
+
+
+               S O L V E      S U M M A R Y
+
+     MODEL   FG_ES               
+     TYPE    CNS                 
+     SOLVER  CONOPT4             FROM LINE  478
+
+**** SOLVER STATUS     1 Normal Completion         
+**** MODEL STATUS      16 Solved                   
+
+ RESOURCE USAGE, LIMIT          0.016      1000.000
+ ITERATION COUNT, LIMIT         2    2000000000
+ EVALUATION ERRORS              0             0
+
+CONOPT 4         29.1.0 rbb4180b Released Nov 15, 2019 WEI x86 64bit/MS Window
+ 
+ 
+    C O N O P T   version 4.15
+    Copyright (C) ARKI Consulting and Development A/S
+                  Bagsvaerdvej 246 A
+                  DK-2880 Bagsvaerd, Denmark
+    Licensed to:  GAMS/CONOPT OEM License
+ 
+ 
+    The user model has 13 constraints and 33 variables
+    with 96 Jacobian elements, 83 of which are nonlinear.
+ 
+    The pre-triangular part of the model has 0 constraints and 20 variables.
+ 
+    Preprocessed model has 13 constraints and 13 variables
+    with 42 Jacobian elements, 29 of which are nonlinear.
+ 
+ ** Feasible solution to a square system.
+ 
+ 
+ CONOPT time Total                            0.002 seconds
+   of which: Function evaluations             0.000 =  0.0%
+             1st Derivative evaluations       0.000 =  0.0%
+ 
+
+
+**** REPORT SUMMARY :        0 INFEASIBLE
+                             0  DEPENDENT
+                             0     ERRORS
+
+
+EXECUTION TIME       =        0.015 SECONDS      2 MB  29.1.0 rbb4180b WEX-WEI
+GAMS 29.1.0  rbb4180b Released Nov 15, 2019 WEX-WEI x86 64bit/MS Windows                                                                                                                                                              07/23/20 15:39:30 Page 12
+G e n e r a l   A l g e b r a i c   M o d e l i n g   S y s t e m
+Solution Report     SOLVE FG_ES Using CNS From line 478
+
+
+USER: Medium MUD - 10 User License                   G200108/0001CA-WIN
+      DREAM, Danish Rational Economic Agents Model                DC620
+
+
+**** FILE SUMMARY
+
+Input      C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\CollectAndRun.gmy
+Output     C:\Users\sxj477\Documents\GitHub\Abatement_project\InputDisplacingAbatement\workfolder\_gams_py_gjo0.lst

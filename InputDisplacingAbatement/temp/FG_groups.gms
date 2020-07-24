@@ -14,5 +14,5 @@ $GROUP FG_endo
 ;
 
 @load_level(FG_endo,%qmark%%FG%");
-@load_fixed(FG_exo,%qmark%%FG%");
 @load_fixed(FG_tech,%qmark%%FG%");
+@load_fixed(FG_exo,%qmark%%FG%");

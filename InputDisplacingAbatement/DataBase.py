@@ -89,7 +89,7 @@ class gpy_symbol:
 	"""
 	alias = 
 	"""
-	def __init__(self,symbol,name=None,param=False,conditions=None,alias=None,alias_domains=None):
+	def __init__(self,symbol,name=None,param=False,conditions=None,alias=None,alias_domains=None,level=''):
 		self.symbol = symbol
 		if name is None:
 			self.name = self.symbol.name
@@ -100,6 +100,7 @@ class gpy_symbol:
 		self.conditions = conditions
 		self.alias = alias
 		self.alias_domains=alias_domains
+		self.level=level
 
 	@property
 	def idx(self):
@@ -122,14 +123,14 @@ class gpy_symbol:
 	def to_str(self):
 		if self.alias is None:
 			if self.conditions is None:
-				return self.name+self.to_string('dom')
+				return self.name+self.level+self.to_string('dom')
 			else:
-				return self.name+self.to_string('dom')+'$'+self.to_string('cond')
+				return self.name+self.level+self.to_string('dom')+'$'+self.to_string('cond')
 		else:
 			if self.conditions is None:
-				return self.alias+self.to_string('dom')
+				return self.alias+self.level+self.to_string('dom')
 			else:
-				return self.alias+self.to_string('dom')+'$'+self.to_string('cond')
+				return self.alias+self.level+self.to_string('dom')+'$'+self.to_string('cond')
 
 	def to_string(self,component):
 		if self.type in ('set','scalar_variable','scalar_parameter'):
@@ -208,14 +209,14 @@ class py_db:
 			py_db.add_or_merge(self.db,alias.get_level_values('alias_map2').unique(),'alias_map2','first')
 			py_db.add_or_merge(self.db,alias,'alias_','first')
 
-	def get(self,x,param=False,conditions=None,alias=None,alias_domains=None):
+	def get(self,x,param=False,conditions=None,alias=None,alias_domains=None,level=''):
 		"""
 		An important feature is the 'get' function. This initializes the self[item] (which is returned as a pandas index) 
 		as an gpy_symbol, giving access to the features defined here.
 		Note: 	The alias, and alias_domains statements are particularly important when utilizing the writing facitilities.
 				alias: an integer, referring to the list of alias' of the given symbol.
 		"""
-		return gpy_symbol(self[x],name=x,param=param,conditions=conditions,alias=self.get_alias(x,alias),alias_domains=self.get_alias_domains(x,alias_domains))
+		return gpy_symbol(self[x],name=x,param=param,conditions=conditions,alias=self.get_alias(x,alias),alias_domains=self.get_alias_domains(x,alias_domains),level=level)
 
 	def get_alias(self,x,alias):
 		"""

@@ -245,7 +245,7 @@ class gams_settings:
 		with open(repo+'\\'+end_w_pkl(pickle_name), "rb") as file:
 			self.__dict__.update(pickle.load(file).__dict__)
 		for db in self.db_export:
-			self.databases = {db: DataBase.py_db(file_path=self.db_export[db]) for db in self.db_export}
+			self.databases = {db: DataBase.py_db(file_path=self.db_export[db],default_db='db_Gdx') for db in self.db_export}
 		return self
 
 	def export(self,repo,pickle_name,inplace_db = False):
