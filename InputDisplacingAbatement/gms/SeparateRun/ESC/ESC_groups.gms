@@ -14,5 +14,5 @@ $GROUP ESC_endo
 ;
 
 @load_level(ESC_endo,%qmark%%ESC%");
-@load_fixed(ESC_exo,%qmark%%ESC%");
 @load_fixed(ESC_tech,%qmark%%ESC%");
+@load_fixed(ESC_exo,%qmark%%ESC%");

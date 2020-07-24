@@ -4,28 +4,28 @@ sets
 	alias_map2
 ;
 
-alias(n,nnn,nn);
+alias(n,nn,nnn);
 
 sets
-	input_ES[n]
-	a_ES[n]
 	output_ES[n]
 	map_ES[n,nn]
-	sector_ES[n]
+	input_ES[n]
 	alias_[alias_set,alias_map2]
+	a_ES[n]
+	sector_ES[n]
 ;
 
 
 $GDXIN %ES%
 $onMulti
 	$load alias_set
-	$load n
 	$load alias_map2
+	$load n
+	$load a_ES
 	$load input_ES
 	$load output_ES
-	$load a_ES
 	$load sector_ES
-	$load map_ES
 	$load alias_
+	$load map_ES
 $GDXIN
 $offMulti

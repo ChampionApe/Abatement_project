@@ -14,5 +14,5 @@ $GROUP Tbase_endo
 ;
 
 @load_level(Tbase_endo,%qmark%%Tbase%");
-@load_fixed(Tbase_tech,%qmark%%Tbase%");
 @load_fixed(Tbase_exo,%qmark%%Tbase%");
+@load_fixed(Tbase_tech,%qmark%%Tbase%");

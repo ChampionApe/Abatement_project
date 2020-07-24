@@ -4,28 +4,28 @@ sets
 	alias_map2
 ;
 
-alias(n,nnn,nn);
+alias(n,nn,nnn);
 
 sets
-	input_Tbase[n]
 	a_Tbase[n]
-	output_Tbase[n]
 	map_Tbase[n,nn]
-	sector_Tbase[n]
+	output_Tbase[n]
+	input_Tbase[n]
 	alias_[alias_set,alias_map2]
+	sector_Tbase[n]
 ;
 
 
 $GDXIN %Tbase%
 $onMulti
 	$load alias_set
-	$load n
 	$load alias_map2
+	$load n
 	$load a_Tbase
+	$load sector_Tbase
 	$load output_Tbase
 	$load input_Tbase
-	$load sector_Tbase
-	$load map_Tbase
 	$load alias_
+	$load map_Tbase
 $GDXIN
 $offMulti

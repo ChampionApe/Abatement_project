@@ -15,5 +15,5 @@ $GROUP T_endo
 ;
 
 @load_level(T_endo,%qmark%%T%");
-@load_fixed(T_exo,%qmark%%T%");
 @load_fixed(T_tech,%qmark%%T%");
+@load_fixed(T_exo,%qmark%%T%");

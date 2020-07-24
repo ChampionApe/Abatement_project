@@ -4,28 +4,28 @@ sets
 	alias_map2
 ;
 
-alias(n,nnn,nn);
+alias(n,nn,nnn);
 
 sets
-	input_FG[n]
-	map_FG[n,nn]
-	sector_FG[n]
 	a_FG[n]
+	input_FG[n]
 	output_FG[n]
 	alias_[alias_set,alias_map2]
+	map_FG[n,nn]
+	sector_FG[n]
 ;
 
 
 $GDXIN %FG%
 $onMulti
 	$load alias_set
-	$load n
 	$load alias_map2
+	$load n
+	$load sector_FG
+	$load output_FG
 	$load input_FG
 	$load a_FG
-	$load output_FG
-	$load sector_FG
-	$load map_FG
 	$load alias_
+	$load map_FG
 $GDXIN
 $offMulti

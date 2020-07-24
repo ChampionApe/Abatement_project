@@ -52,13 +52,14 @@ class gams_model:
 			self.model.databases[database].db_Gdx.export(self.work_folder+'\\'+end_w_gdx(database))
 			self.dbs[database] = self.ws.add_database_from_gdx(self.work_folder+'\\'+end_w_gdx(database))
 
-	def run(self,model,options_add={},options_run={}):
+	def run(self,model=None,run_from_job=False,options_add={},options_run={}):
 		"""
 		Create Model instance and run.
 		"""
-		self.model_instance(model)
-		self.compile_collect_file()
-		self.add_job(options_add)
+		if run_from_job is False:
+			self.model_instance(model)
+			self.compile_collect_file()
+			self.add_job(options_add)
 		self.run_job(options_run)
 		self.out_db = DataBase.py_db(database_gdx=self.job.out_db,default_db='db_Gdx')
 
