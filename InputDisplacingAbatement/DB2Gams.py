@@ -444,11 +444,11 @@ class gams_model_py:
 			if onmulti:
 				out_str += '$onMulti\n'
 			for x in set(self.database.sets['sets'])-set(self.exceptions_load)-set(self.database.aliased_all_all):
-				out_str += '\t$load '+x+'\n'
+				out_str += '$load '+x+'\n'
 			for x in set(self.database.sets['subsets'])-set(self.exceptions_load)-set(self.database.aliased_all_all):
-				out_str += '\t$load '+x+'\n'
+				out_str += '$load '+x+'\n'
 			for x in set(self.database.sets['mappings'])-set(self.exceptions_load)-set(self.database.aliased_all_all):
-				out_str += '\t$load '+x+'\n'
+				out_str += '$load '+x+'\n'
 			out_str += '$GDXIN\n'
 			if onmulti:
 				out_str += '$offMulti\n'
@@ -460,7 +460,7 @@ class gams_model_py:
 		else:
 			out_str = 'parameters\n'
 			for x in (set(self.database.parameters_flat)-set(self.exceptions)):
-				out_str += '\t'+self.get(x).to_str
+				out_str += '\t'+self.database.get(x).to_str+'\n'
 			out_str += ';\n\n'
 		return out_str
 
@@ -472,7 +472,7 @@ class gams_model_py:
 			if onmulti:
 				out_str += '$onMulti\n'
 			for x in set(self.database.parameters_flat)-set(self.exceptions_load):
-				out_str += '\t$load '+x+'\n'
+				out_str += '$load '+x+'\n'
 			if onmulti:
 				out_str += '$offMulti\n'
 			return out_str

@@ -1,41 +1,41 @@
 sets
+	alias_map2
 	alias_set
 	n
-	alias_map2
 ;
 
 alias(n,nn,nnn);
 
 sets
-	output_T[n]
-	o_agg_T[n]
-	o_endo_T[n]
-	a_map_T[n,nn]
-	input_T[n]
 	i_agg_T[n]
-	alias_[alias_set,alias_map2]
+	o_agg_T[n]
 	i_endo_T[n]
-	i_map_T[n,nn]
+	input_T[n]
 	o_map_T[n,nn]
 	a_agg_T[n]
+	output_T[n]
+	a_map_T[n,nn]
+	o_endo_T[n]
+	alias_[alias_set,alias_map2]
+	i_map_T[n,nn]
 ;
 
 
 $GDXIN %T%
 $onMulti
-	$load alias_set
 	$load alias_map2
+	$load alias_set
 	$load n
-	$load output_T
-	$load o_agg_T
-	$load o_endo_T
 	$load i_agg_T
-	$load input_T
+	$load o_agg_T
 	$load i_endo_T
+	$load input_T
 	$load a_agg_T
+	$load output_T
+	$load o_endo_T
 	$load alias_
-	$load i_map_T
 	$load a_map_T
+	$load i_map_T
 	$load o_map_T
 $GDXIN
 $offMulti

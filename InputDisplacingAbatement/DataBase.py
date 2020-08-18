@@ -84,6 +84,9 @@ def traverse(o, tree_types=(list,tuple,pd.Index)):
     else:
         yield o
 
+def empty_as_list(x):
+	return [] if x is None else x
+
 # Class of items when retrieving from a database:
 class gpy_symbol:
 	"""
@@ -346,7 +349,7 @@ class py_db:
 		"""
 		Returns dictionary with set names w. alias' as keys, and their corresponding alias' names in an index as values.
 		"""
-		return {name: self['alias_'].get_level_values(1)[self['alias_'].get_level_values(0)==name] for name in self['alias_'].get_level_values(0).unique()}
+		return {} if self['alias_'] is None else {name: self['alias_'].get_level_values(1)[self['alias_'].get_level_values(0)==name] for name in self['alias_'].get_level_values(0).unique()}
 
 	@property
 	def aliased_sets_all(self):
@@ -491,7 +494,16 @@ class py_db:
 			py_db.read_maps_from_excel_matrix(self.db_pd,wb,read_type['maps_matrix'])
 		if 'maps_panel' in read_type:
 			py_db.read_maps_from_excel_panel(self.db_pd,wb,read_type['maps_panel'])
+		if 'subsets' in read_type:
+			py_db.read_subsets_from_excel(self.db_pd,wb,read_type['subsets'])
 		wb.close()
+
+	@staticmethod 
+	def read_subsets_from_excel(db,wb,sheets,priority='second'):
+		for sheet in sheets:
+			temp = pd.DataFrame(wb[sheet].values)
+			symbol = pd.Index(temp.iloc[1:,0],name=temp.iloc[0,0])
+			py_db.add_or_merge(db,symbol,sheet,priority)
 
 	@staticmethod
 	def read_1dvars_from_excel(db,wb,sheets,priority='second'):
